@@ -1,20 +1,15 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import styles from "./page.module.css";
 import "./globals.css";
+import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-
+import { NotesProvider } from "@/app/context/notesContext";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Tag } from "@/types/note";
+import homeStyles from "./Home.module.css";
 
 export const metadata: Metadata = {
   title: "NoteHub",
@@ -23,19 +18,30 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal, 
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode; 
 }>) {
+  const allTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
+
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {}
+    <ClerkProvider afterSignOutUrl="/">
+      <NotesProvider>
         <TanStackProvider>
-          <Header />
-          {children}
-          <Footer />
+          <html lang="en">
+            <body
+              className={`${GeistSans.variable} ${GeistMono.variable} ${styles.body}`}
+            >
+              <Header allTags={allTags} />
+              <main className={homeStyles.main}>{children}</main>
+              <div id="modal-root" /> {}
+              {modal}
+              <Footer />
+            </body>
+          </html>
         </TanStackProvider>
-      </body>
-    </html>
+      </NotesProvider>
+    </ClerkProvider>
   );
 }

@@ -1,9 +1,10 @@
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import NoteDetailsClient from "@/app/notes/[id]/NoteDetails.client";
-import { fetchNoteById } from "@/lib/api";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import ModalContainer from "./modal";
+import { fetchNoteById } from "@/lib/api";
 
-export default async function NoteDetailsPage({
+export default async function InterceptedNoteDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -21,8 +22,10 @@ export default async function NoteDetailsPage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <TanStackProvider dehydratedState={dehydratedState}>
-      <NoteDetailsClient />
-    </TanStackProvider>
+    <ModalContainer>
+      <TanStackProvider dehydratedState={dehydratedState}>
+        <NoteDetailsClient />
+      </TanStackProvider>
+    </ModalContainer>
   );
 }

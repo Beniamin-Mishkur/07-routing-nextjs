@@ -20,16 +20,28 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
 export const fetchNotes = async (
   page: number,
   perPage: number,
-  search: string = ""
+  search: string = "",
+  tag?: string
 ): Promise<FetchNotesResponse> => {
   try {
-    const params: { page: number; perPage: number; search?: string } = {
+    const params: {
+      page: number;
+      perPage: number;
+      search?: string;
+      tag?: string;
+    } = {
       page,
       perPage,
     };
+
     if (search) {
       params.search = search;
     }
+
+    if (tag && tag !== "All") {
+      params.tag = tag;
+    }
+
     const response = await axios.get<FetchNotesResponse>(
       `${API_BASE_URL}/notes`,
       {
@@ -39,6 +51,13 @@ export const fetchNotes = async (
     );
     return response.data;
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.error(
+        `Error fetching notes: ${error.response.status} - ${error.response.data}`
+      );
+    } else {
+      console.error("Error fetching notes:", error);
+    }
     throw error;
   }
 };

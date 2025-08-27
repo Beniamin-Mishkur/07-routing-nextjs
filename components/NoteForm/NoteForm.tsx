@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { createNote } from "@/lib/api";
+import type { Tag } from "@/types/note";
 
 import styles from "./NoteForm.module.css";
 import toast from "react-hot-toast";
@@ -12,19 +13,20 @@ interface NoteFormProps {
   onClose: () => void;
 }
 
-const validationSchema = Yup.object({
-  title: Yup.string()
-    .required("Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(50, "Title must be at most 50 characters"),
-  content: Yup.string().max(500, "Content must be at most 500 characters"),
-  tag: Yup.string()
-    .required("Tag is required")
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag"),
-});
-
 export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
+  const allTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
+
+  const validationSchema = Yup.object({
+    title: Yup.string()
+      .required("Title is required")
+      .min(3, "Title must be at least 3 characters")
+      .max(50, "Title must be at most 50 characters"),
+    content: Yup.string().max(500, "Content must be at most 500 characters"),
+    tag: Yup.string()
+      .required("Tag is required")
+      .oneOf(allTags as string[], "Invalid tag"),
+  });
 
   const mutation = useMutation({
     mutationFn: createNote,
@@ -43,7 +45,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
       initialValues={{
         title: "",
         content: "",
-        tag: "Todo" as "Todo" | "Work" | "Personal" | "Meeting" | "Shopping",
+        tag: allTags[0] || "",
       }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, resetForm }) => {
@@ -91,14 +93,11 @@ export default function NoteForm({ onClose }: NoteFormProps) {
               as="select"
               className={styles.select}
             >
-              <option value="" disabled>
-                Select a tag
-              </option>
-              <option value="Todo">Todo</option>
-              <option value="Work">Work</option>
-              <option value="Personal">Personal</option>
-              <option value="Meeting">Meeting</option>
-              <option value="Shopping">Shopping</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
             </Field>
             <ErrorMessage name="tag" component="div" className={styles.error} />
           </div>
