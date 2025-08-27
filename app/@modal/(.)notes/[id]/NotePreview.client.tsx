@@ -1,3 +1,4 @@
+// app/@modal/(.)notes/[id]/NotePreview.client.tsx
 "use client";
 
 import { useQuery } from "@tanstack/react-query";

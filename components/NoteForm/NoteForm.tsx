@@ -1,3 +1,4 @@
+// components/NoteForm/NoteForm.tsx
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,8 @@ interface NoteFormProps {
 
 export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
+
+  // Ствараем спіс тэгаў лакальна, як патрабуе ментар
   const allTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
   const validationSchema = Yup.object({

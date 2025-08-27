@@ -1,5 +1,6 @@
 import css from "./Home.module.css";
-export default function HomePage() {
+
+export default function Home() {
   return (
     <main>
       <div className={css.container}>
@@ -10,7 +11,7 @@ export default function HomePage() {
           in one place, whether you are at home or on the go.
         </p>
         <p className={css.description}>
-          The app provides a clean interface for writing, editing, and browsing
+          The app provides a clean interface for writing, editing, and Browse
           notes. With support for keyword search and structured organization,
           NoteHub offers a streamlined experience for anyone who values clarity
           and productivity.
@@ -19,4 +20,3 @@ export default function HomePage() {
     </main>
   );
 }
-
