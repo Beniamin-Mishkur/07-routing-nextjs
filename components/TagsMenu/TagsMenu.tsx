@@ -1,10 +1,9 @@
-// components/TagsMenu/TagsMenu.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Tag } from "@/types/note";
+import type { Tag } from "@/types/note";
 import css from "./TagsMenu.module.css";
 
 interface TagsMenuProps {
@@ -14,65 +13,76 @@ interface TagsMenuProps {
 const TagsMenu = ({ allTags }: TagsMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const handleToggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const uniqueTags = useMemo(
+    () => Array.from(new Set(allTags)),
+    [allTags]
+  );
 
-  const handleLinkClick = () => {
-    setIsOpen(false);
-  };
+  const currentTag: Tag = useMemo(() => {
+    const m = pathname.match(/^\/notes(?:\/filter\/([^/?#]+))?/);
+    return (m?.[1] as Tag) ?? "All";
+  }, [pathname]);
+
+  const isAllActive = pathname === "/notes" || currentTag === "All";
+
+  const toggleOpen = () => setIsOpen((v) => !v);
+  const close = () => setIsOpen(false);
 
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (
-        isOpen &&
-        event.target instanceof HTMLElement &&
-        !document.querySelector(`.${css.menuContainer}`)?.contains(event.target)
-      ) {
-        setIsOpen(false);
+    const onClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        close();
       }
     };
-
-    if (isOpen) {
-      document.addEventListener("click", handleOutsideClick);
-    }
-
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, [isOpen]);
-
-  const currentTag = pathname.split("/").pop();
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   return (
-    <div className={css.menuContainer}>
-      <button onClick={handleToggleMenu} className={css.menuButton}>
-        Notes ▾
+    <div className={css.menuContainer} ref={menuRef}>
+      <button
+        type="button"
+        className={css.menuButton}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        onClick={toggleOpen}
+      >
+        Filter by tag
       </button>
 
       {isOpen && (
-        <ul className={css.menuList}>
-          <li className={css.menuItem}>
+        <ul className={css.menuList} role="menu">
+          {/* All notes */}
+          <li role="none">
             <Link
               href="/notes/filter/All"
-              className={`${css.menuLink} ${currentTag === "notes" || currentTag === "" ? css.active : ""}`}
-              onClick={handleLinkClick}
+              role="menuitem"
+              className={`${css.menuLink} ${isAllActive ? css.active : ""}`}
+              onClick={close}
             >
               All notes
             </Link>
           </li>
-          {allTags.map((tag: Tag) => (
-            <li key={tag} className={css.menuItem}>
-              <Link
-                href={`/notes/filter/${tag}`}
-                className={`${css.menuLink} ${currentTag === tag ? css.active : ""}`}
-                onClick={handleLinkClick}
-              >
-                {tag}
-              </Link>
-            </li>
-          ))}
+
+          {/* Інші теги (без дублювання All) */}
+          {uniqueTags
+            .filter((t): t is Tag => Boolean(t) && t !== "All")
+            .map((tag) => (
+              <li key={tag} role="none">
+                <Link
+                  href={`/notes/filter/${encodeURIComponent(tag)}`}
+                  role="menuitem"
+                  className={`${css.menuLink} ${
+                    currentTag === tag ? css.active : ""
+                  }`}
+                  onClick={close}
+                >
+                  {tag}
+                </Link>
+              </li>
+            ))}
         </ul>
       )}
     </div>
